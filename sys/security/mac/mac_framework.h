@@ -72,6 +72,7 @@ struct mac;
 struct mbuf;
 struct mount;
 struct msg;
+struct msghdr;
 struct msqid_kernel;
 struct proc;
 struct semid_kernel;
@@ -278,12 +279,18 @@ int	mac_socket_check_bind(struct ucred *cred, struct socket *so,
 	    struct sockaddr *sa);
 int	mac_socket_check_connect(struct ucred *cred, struct socket *so,
 	    struct sockaddr *sa);
+void	mac_socket_before_connect(struct thread *td, struct socket *so,
+	    struct sockaddr *sa);
+void	mac_socket_after_connect(struct thread *td, struct socket *so,
+	    struct sockaddr *sa);
 int	mac_socket_check_create(struct ucred *cred, int domain, int type,
 	    int proto);
 int	mac_socket_check_deliver(struct socket *so, struct mbuf *m);
 int	mac_socket_check_listen(struct ucred *cred, struct socket *so);
 int	mac_socket_check_poll(struct ucred *cred, struct socket *so);
 int	mac_socket_check_receive(struct ucred *cred, struct socket *so);
+void	mac_socket_after_receive(struct ucred *cred, struct socket *so,
+	    struct msghdr *mp, struct sockaddr *fromsa);
 int	mac_socket_check_send(struct ucred *cred, struct socket *so);
 int	mac_socket_check_stat(struct ucred *cred, struct socket *so);
 int	mac_socket_check_visible(struct ucred *cred, struct socket *so);

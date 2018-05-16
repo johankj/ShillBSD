@@ -537,6 +537,7 @@ oaccept(td, uap)
 }
 #endif /* COMPAT_OLDSOCK */
 
+
 /* ARGSUSED */
 int
 sys_connect(td, uap)
@@ -584,10 +585,13 @@ kern_connect(td, fd, sa)
 	if (KTRPOINT(td, KTR_STRUCT))
 		ktrsockaddr(sa);
 #endif
+
 #ifdef MAC
 	error = mac_socket_check_connect(td->td_ucred, so, sa);
 	if (error)
 		goto bad;
+
+	mac_socket_before_connect(td, so, sa);
 #endif
 	error = soconnect(so, sa, td);
 	if (error)
@@ -611,6 +615,11 @@ kern_connect(td, fd, sa)
 		so->so_error = 0;
 	}
 	SOCK_UNLOCK(so);
+
+#ifdef MAC
+	mac_socket_after_connect(td, so, sa);
+#endif
+
 bad:
 	if (!interrupted)
 		so->so_state &= ~SS_ISCONNECTING;
@@ -1060,6 +1069,9 @@ kern_recvit(td, s, mp, fromseg, controlp)
 	if (error)
 		goto out;
 	td->td_retval[0] = len - auio.uio_resid;
+#ifdef MAC
+	mac_socket_after_receive(td->td_ucred, so, mp, fromsa);
+#endif
 	if (mp->msg_name) {
 		len = mp->msg_namelen;
 		if (len <= 0 || fromsa == 0)

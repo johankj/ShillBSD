@@ -84,6 +84,7 @@ struct mac_policy_conf;
 struct mbuf;
 struct mount;
 struct msg;
+struct msghdr;
 struct msqid_kernel;
 struct pipepair;
 struct proc;
@@ -404,6 +405,12 @@ typedef int	(*mpo_socket_check_bind_t)(struct ucred *cred,
 typedef int	(*mpo_socket_check_connect_t)(struct ucred *cred,
 		    struct socket *so, struct label *solabel,
 		    struct sockaddr *sa);
+typedef int	(*mpo_socket_before_connect_t)(struct thread *td,
+		    struct socket *so, struct label *solabel,
+		    struct sockaddr *sa);
+typedef int	(*mpo_socket_after_connect_t)(struct thread *td,
+		    struct socket *so, struct label *solabel,
+		    struct sockaddr *sa);
 typedef int	(*mpo_socket_check_create_t)(struct ucred *cred, int domain,
 		    int type, int protocol);
 typedef int	(*mpo_socket_check_deliver_t)(struct socket *so,
@@ -415,6 +422,9 @@ typedef int	(*mpo_socket_check_poll_t)(struct ucred *cred,
 		    struct socket *so, struct label *solabel);
 typedef int	(*mpo_socket_check_receive_t)(struct ucred *cred,
 		    struct socket *so, struct label *solabel);
+typedef int	(*mpo_socket_after_receive_t)(struct ucred *cred,
+		    struct socket *so, struct msghdr *mp,
+		    struct sockaddr *fromsa);
 typedef int	(*mpo_socket_check_relabel_t)(struct ucred *cred,
 		    struct socket *so, struct label *solabel,
 		    struct label *newlabel);
@@ -848,11 +858,14 @@ struct mac_policy_ops {
 	mpo_socket_check_accept_t		mpo_socket_check_accept;
 	mpo_socket_check_bind_t			mpo_socket_check_bind;
 	mpo_socket_check_connect_t		mpo_socket_check_connect;
+	mpo_socket_before_connect_t		mpo_socket_before_connect;
+	mpo_socket_after_connect_t		mpo_socket_after_connect;
 	mpo_socket_check_create_t		mpo_socket_check_create;
 	mpo_socket_check_deliver_t		mpo_socket_check_deliver;
 	mpo_socket_check_listen_t		mpo_socket_check_listen;
 	mpo_socket_check_poll_t			mpo_socket_check_poll;
 	mpo_socket_check_receive_t		mpo_socket_check_receive;
+	mpo_socket_after_receive_t		mpo_socket_after_receive;
 	mpo_socket_check_relabel_t		mpo_socket_check_relabel;
 	mpo_socket_check_send_t			mpo_socket_check_send;
 	mpo_socket_check_stat_t			mpo_socket_check_stat;

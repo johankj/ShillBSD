@@ -345,6 +345,22 @@ mac_socket_check_connect(struct ucred *cred, struct socket *so,
 	return (error);
 }
 
+void
+mac_socket_before_connect(struct thread *td, struct socket *so,
+    struct sockaddr *sa)
+{
+  int result = 0;
+  MAC_POLICY_BOOLEAN(socket_before_connect, ||, td, so, so->so_label, sa);
+}
+
+void
+mac_socket_after_connect(struct thread *td, struct socket *so,
+    struct sockaddr *sa)
+{
+	int result = 0;
+	MAC_POLICY_BOOLEAN(socket_after_connect, ||, td, so, so->so_label, sa);
+}
+
 MAC_CHECK_PROBE_DEFINE4(socket_check_create, "struct ucred *", "int", "int",
     "int");
 
@@ -424,6 +440,14 @@ mac_socket_check_receive(struct ucred *cred, struct socket *so)
 	MAC_CHECK_PROBE2(socket_check_receive, error, cred, so);
 
 	return (error);
+}
+
+void
+mac_socket_after_receive(struct ucred *cred, struct socket *so,
+    struct msghdr *mp, struct sockaddr *fromsa)
+{
+    int result = 0;
+    MAC_POLICY_BOOLEAN(socket_after_receive, ||, cred, so, mp, fromsa);
 }
 
 MAC_CHECK_PROBE_DEFINE3(socket_check_relabel, "struct ucred *",
